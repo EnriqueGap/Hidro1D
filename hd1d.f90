@@ -8,11 +8,14 @@ module globals
   !   This is the number of points used to discretize X
   !
   integer, parameter :: nx=200
+  integer, parameter :: ny=200
   !   This is the number of equation
-  integer, parameter :: neq=3
+  integer, parameter :: neq=4
   !   Here we set the extent of X and calculate $\Delta x$
   real, parameter :: xmax=1.
+  real, parameter :: ymax=1.
   real, parameter :: dx=xmax/real(nx)
+  real, parameter :: dy=ymax/real(ny)
   ! The simulation times
   real, parameter :: tmax= 1.             ! maximumn integration time
   real, parameter :: dtprint=0.1          ! interval between outputs
@@ -26,7 +29,7 @@ module globals
   real, parameter :: boltz=1.38e-16
   real, parameter :: mh=1.67e-24
   !   This is a vector that contains u(x)
-  real,dimension(neq,0:nx+1) :: u,f
+  real,dimension(neq,0:nx+1,0:ny+1) :: u,f !U(x,y) & F(x,y)
 
 end module globals
 !=======================================================================
@@ -74,28 +77,31 @@ subroutine initflow(time, tprint, itprint)
   real, intent(out) :: time, tprint
   integer, intent (out) :: itprint
   !internal variables
-  real, parameter :: u0=0.0, u1=0., p0=0.15, p1=1.
-  real, parameter :: rho0=0.1, rho1=1.,x1=0.5
+  real, parameter :: ux0=0.0, uy0=0., ux1=0.0, uy1=0. 
+  real, parameter :: rho0=1., rho1=0.1, p0=1., p1=0.15, xm=0.5
   real :: x
   integer :: i
 
   !  fill the vector u
   do i=0, nx+1
     x=real(i)*dx   ! obtain the position $x_i$
-    if( x < x1 )  then
-      u(1,i)=rho1
-      u(2,i)=u1
-      u(3,i)=p1
+    if( x < xm )  then
+      u(1,i,:)=rho0
+      u(2,i,:)=ux0
+      u(3,i,:)=uy0
+      u(neq,i,:)=p0
     else
-      u(1,i)=rho0
-      u(2,i)=u0
-      u(3,i)=p0
+      u(1,i,:)=rho1
+      u(2,i,:)=ux1
+      u(3,i,:)=uy1
+      u(neq,i,:)=p1
     end if
 
-    if( (x-0.5*dx <= x1).and.(x+0.5*dx >= x1) ) then
-      u(1,i)=(rho0+rho1)/2.
-      u(2,i)=(u0+u1)/2.
-      u(3,i)=(p0+p1)/2.
+    if( (x-0.5*dx <= xm).and.(x+0.5*dx >= xm) ) then
+      u(1,i,:)=(rho0+rho1)/2.
+      u(2,i,:)=(ux0+ux1)/2.
+      u(3,i,:)=(uy0+uy1)/2.
+      u(neq,i,:)=(p0+p1)/2.
     end if
   end do
 
