@@ -105,7 +105,7 @@ subroutine initflow(time, tprint, itprint)
     end if
   end do
 
-  print*,u(1,1)
+  print*,u(1,1) !??????????????????????????????????????????????
 
   !   reset the counters and time to 0
   time=0.
@@ -133,7 +133,7 @@ subroutine output(itprint)
 
   ! writes x and u
   do i=1,nx
-    call uprim(u(:,i),prim,temp)
+    call uprim(u(:,i),prim,temp)                        !Revisar la subrutina uprim primero
     write(10,*) real(i)*dx,prim(1),prim(2),prim(3)
   end do
 
@@ -156,9 +156,11 @@ subroutine timestep(dt)
   !
   del=1.e+30
   do i=1,nx
-    call uprim(u(:,i),prim,temp)
-    cs=csound(prim(1),prim(3))
-    del=min(del,dx/abs(prim(2)+cs))
+    do j=1,ny
+      call uprim(u(:,i,j),prim,temp)
+      cs=csound(prim(1),prim(3))
+      del=min(del, dx/abs(prim(2)+cs), dy/abs(prim(3)+cs))
+    enddo
   enddo
   dt=Co*del
   return
@@ -188,10 +190,11 @@ subroutine uprim(uu,prim,temp)
 
   prim(1)=uu(1)
   prim(2)=uu(2)/prim(1)
-  ek=0.5*prim(1)*prim(2)**2.
-  et=uu(3)-ek
-  prim(3)=et/(gamma-1.)
-  temp=prim(3)/(prim(1)*boltz/(mu*mh))
+  prim(3)=uu(3)/prim(1)
+  ek=0.5*prim(1)*(prim(2)+prim(3))**2.
+  et=uu(neq)-ek
+  prim(neq)=et/(gamma-1.)
+  temp=prim(neq)/(prim(1)*boltz/(mu*mh))
   !
   return
 end subroutine uprim
@@ -230,21 +233,25 @@ end subroutine tstep
 !=======================================================================
 ! Obtain the fluxes F
 subroutine fluxes(u,f)
-  use globals, only :neq,nx,gamma
+  use globals, only :neq,nx,ny,gamma
   implicit none
-  real,dimension(neq,0:nx+1),intent(in) :: u
-  real,dimension(neq,0:nx+1),intent(out) :: f
+  real,dimension(neq,0:nx+1,0:ny+1),intent(in) :: u
+  real,dimension(neq,0:nx+1,0:ny+1),intent(out) :: f
   !internal variables
   real, dimension(neq) :: prim
   integer :: i
   real :: temp,etot
 
    do i=0,nx+1
-    call uprim(u(:,i),prim,temp)
-    Etot=0.5*prim(1)*prim(2)**2.+prim(3)/(gamma-1.)
-    f(1,i)=prim(1)*prim(2)
-    f(2,i)=prim(1)*prim(2)**2.+prim(3)
-    f(3,i)=prim(2)*(etot+prim(3))
+    do j=0,ny+1
+      call uprim(u(:,i,j),prim,temp)
+      Etot=0.5*prim(1)*(prim(2)+prim(3))**2.+prim(neq)/(gamma-1.)
+      f(1,i,j)=prim(1)*prim(2)
+      !f(2,i,j)=prim(1)*prim(2)**2.+prim(3)
+      f(2,i,j)=prim(1)*prim(2)**2.+prim(1)*prim(2)*prim(3)
+      f(3,i,j)=prim(1)*prim(3)**2.+prim(1)*prim(2)*prim(3)
+      f(neq,i,j)=(prim(2)+prim(3))*(etot+prim(3))
+    enddo
 !    print*,u(1,i),prim(1),f(1,i),prim(2)
 !    print*,prim(1),f(2,i),prim(2),prim(3)
   enddo
@@ -255,12 +262,16 @@ end subroutine fluxes
 !=======================================================================
 ! Set boundary conditions
 subroutine boundaries(u)
-  use globals, only : nx,neq
+  use globals, only : nx,ny,neq
   implicit none
-  real,dimension(neq,0:nx+1), intent(inout) :: u
+  real,dimension(neq,0:nx+1,0:ny+1), intent(inout) :: u
   ! free outflow (salida libre)
-  u(:,0)=u(:,1)
-  u(:,nx+1)=u(:,nx)
+  !x
+  u(:,0,:)=u(:,1,:)
+  u(:,nx+1,:)=u(:,nx,:)
+  !y
+  u(:,:,0)=u(:,:,1)
+  u(:,:,ny+1)=u(:,:,ny)
   return
 end subroutine boundaries
 !=======================================================================
