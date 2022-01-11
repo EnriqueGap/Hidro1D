@@ -30,7 +30,7 @@ module globals
   real, parameter :: mh=1.67e-24
   !   This is a vector that contains u(x)
   real,dimension(neq,0:nx+1,0:ny+1) :: u,f !U(x,y) & F(x,y)
-
+  !
 end module globals
 !=======================================================================
 !   main program
@@ -105,7 +105,7 @@ subroutine initflow(time, tprint, itprint)
     end if
   end do
 
-  print*,u(1,1) !??????????????????????????????????????????????
+  print*,u(1,1,1)
 
   !   reset the counters and time to 0
   time=0.
