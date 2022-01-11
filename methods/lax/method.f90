@@ -23,21 +23,10 @@ contains
     !   not be calculated, we need to enter then as boundary conditions
     dtx=dt/dx
   !
-  !  do i=1,nx
-  !    up(:,i)=0.5*(u(:,i-1)+u(:,i+1)-dtx*(f(:,i+1)-f(:,i-1)))
-  !  end do 
-    !	MacCormack Method
-    !	Predictor Step 
     do i=1,nx
-      upp(:,i) = u(:,i) - dtx*(f(:,i+1)-f(:,i)) + eta*(u(:,i-1) + u(:,i+1) - 2*u(:,i))
-    end do
-    call boundaries(upp)
-    call fluxes(upp,f)
+      up(:,i)=0.5*(u(:,i-1)+u(:,i+1)-dtx*(f(:,i+1)-f(:,i-1)))
+    end do 
   !
-    !	Corrector Step
-    do i=1,nx
-      up(:,i)=0.5*(u(:,i)+upp(:,i) - dtx*(f(:,i)-f(:,i-1))) + eta*(upp(:,i-1) + upp(:,i+1) - 2*upp(:,i))
-    end do
   !   Boundary conditions to the U^n+1
     call boundaries(up)
   

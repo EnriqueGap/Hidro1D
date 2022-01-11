@@ -58,7 +58,7 @@ subroutine initflow(time, tprint, itprint)
     integer :: i
   
     ! open output file
-    write(file1,'(a,i2.2,a)') 'vishd-',itprint,'.dat'
+    write(file1,'(a,i2.2,a)') 'hd-',itprint,'.dat'
     open(unit=10,file=file1,status='unknown')
   
     ! writes x and u
