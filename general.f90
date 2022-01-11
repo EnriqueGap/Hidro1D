@@ -35,7 +35,7 @@ subroutine initflow(time, tprint, itprint)
       end if
     end do
   
-    print*,u(1,1)
+    !print*,u(1,1)
   
     !   reset the counters and time to 0
     time=0.
