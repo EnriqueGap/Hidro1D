@@ -1,5 +1,5 @@
-#METHOD = LAX
-METHOD = MACCORMACK
+METHOD = LAX
+#METHOD = MACCORMACK
 include methods/Makefile
 
 hidro : globals.o \
