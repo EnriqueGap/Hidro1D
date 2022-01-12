@@ -21,17 +21,17 @@ subroutine initflow(time, tprint, itprint)
       if( x < x1 )  then
         u(1,i)=rho1
         u(2,i)=u1
-        u(3,i)=p1/(gamma-1.)
+        u(neq,i)=p1/(gamma-1.)
       else
         u(1,i)=rho0
         u(2,i)=u0
-        u(3,i)=p0/(gamma-1.)
+        u(neq,i)=p0/(gamma-1.)
       end if
   
       if( (x-0.5*dx <= x1).and.(x+0.5*dx >= x1) ) then
         u(1,i)=(rho0+rho1)/2.
         u(2,i)=(u0+u1)/2.
-        u(3,i)=(p0+p1)/(2.*(gamma-1.))
+        u(neq,i)=(p0+p1)/(2.*(gamma-1.))
       end if
     end do
   
@@ -87,7 +87,7 @@ subroutine initflow(time, tprint, itprint)
     del=1.e+30
     do i=1,nx
       call uprim(u(:,i),prim,temp)
-      cs=sqrt(gamma*prim(3)/prim(1))    
+      cs=sqrt(gamma*prim(neq)/prim(1))    
       del=min(del,dx/abs(prim(2)+cs))
     enddo
     dt=Co*del
@@ -107,9 +107,9 @@ subroutine initflow(time, tprint, itprint)
     prim(1)=uu(1)
     prim(2)=uu(2)/prim(1)
     ek=0.5*prim(1)*prim(2)**2.
-    et=uu(3)-ek
-    prim(3)=et*(gamma-1.)
-    temp=prim(3)/(prim(1)*boltz/(mu*mh))
+    et=uu(neq)-ek
+    prim(neq)=et*(gamma-1.)
+    temp=prim(neq)/(prim(1)*boltz/(mu*mh))
     !
     return
   end subroutine uprim
@@ -127,12 +127,10 @@ subroutine initflow(time, tprint, itprint)
   
      do i=0,nx+1
       call uprim(u(:,i),prim,temp)
-      Etot=0.5*prim(1)*prim(2)**2.+prim(3)/(gamma-1.)
+      Etot=0.5*prim(1)*prim(2)**2.+prim(neq)/(gamma-1.)
       f(1,i)=prim(1)*prim(2)
-      f(2,i)=prim(1)*prim(2)**2.+prim(3)
-      f(3,i)=prim(2)*(etot+prim(3))
-  !    print*,u(1,i),prim(1),f(1,i),prim(2)
-  !    print*,prim(1),f(2,i),prim(2),prim(3)
+      f(2,i)=prim(1)*prim(2)**2.+prim(neq)
+      f(neq,i)=prim(2)*(etot+prim(neq))
     enddo
   
     return
