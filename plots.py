@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import imageio
+import os
 
 for i in range(10):
 	a=str(i)
@@ -43,4 +44,4 @@ for i in range(10):
 with imageio.get_writer("test.gif", mode='I') as writer:
 	for i in range(10):
 		writer.append_data(imageio.imread('im'+str(i)+'.png'))
-
+os.system('eog test.gif')
