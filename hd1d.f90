@@ -20,7 +20,7 @@ module globals
   real, parameter :: tmax= 1.             ! maximumn integration time
   real, parameter :: dtprint=0.1          ! interval between outputs
   ! Courant number
-  real, parameter :: Co=0.5
+  real, parameter :: Co=0.8
 
   ! simulation constants
   real, parameter :: gamma=5./3.
@@ -29,7 +29,7 @@ module globals
   real, parameter :: boltz=1.38e-16
   real, parameter :: mh=1.67e-24
   !   This is a vector that contains u(x)
-  real,dimension(neq,0:nx+1,0:ny+1) :: u,f !U(x,y) & F(x,y)
+  real,dimension(neq,0:nx+1,0:ny+1) :: u,f,g !U(x,y) & F(x,y)
   !
 end module globals
 !=======================================================================
@@ -77,7 +77,7 @@ subroutine initflow(time, tprint, itprint)
   real, intent(out) :: time, tprint
   integer, intent (out) :: itprint
   !internal variables
-  real, parameter :: ux0=0.0, uy0=0., ux1=0.0, uy1=0. 
+  real, parameter :: ux0=0.0, uy0=0., ux1=0.0, uy1=0.                   !(vx,vy)=v0 for x<xm & (vx,vy)=v1 for x>xm
   real, parameter :: rho0=1., rho1=0.1, p0=1., p1=0.15, xm=0.5
   real :: x
   integer :: i
@@ -104,9 +104,6 @@ subroutine initflow(time, tprint, itprint)
       u(neq,i,:)=(p0+p1)/2.
     end if
   end do
-
-  print*,u(1,1,1)
-
   !   reset the counters and time to 0
   time=0.
   tprint=0.
@@ -125,16 +122,71 @@ subroutine output(itprint)
   character (len=20) file1
   real                :: temp
   real,dimension(neq) :: prim
-  integer :: i
+  real,dimension(1:nx,1:ny) :: rho, vx, vy, energy
+  integer :: i,j
 
   ! open output file
-  write(file1,'(a,i2.2,a)') 'hd-',itprint,'.dat'
+  write(file1,'(a,i2.2,a)') 'rho-',itprint,'.dat'
   open(unit=10,file=file1,status='unknown')
 
-  ! writes x and u
   do i=1,nx
-    call uprim(u(:,i),prim,temp)                        !Revisar la subrutina uprim primero
-    write(10,*) real(i)*dx,prim(1),prim(2),prim(3)
+    do j=1,ny
+      call uprim(u(:,i,j),prim,temp)
+    rho(i,j)=prim(1)
+    end do
+  end do
+  do j=1,ny
+    write(10,*) (rho(i,j),i=1,nx)
+  end do
+
+  ! closes output file
+  close(10)
+
+! open output file
+  write(file1,'(a,i2.2,a)') 'vx-',itprint,'.dat'
+  open(unit=10,file=file1,status='unknown')
+
+  do i=1,nx
+    do j=1,ny
+      call uprim(u(:,i,j),prim,temp)
+    vx(i,j)=prim(2)
+    end do
+  end do
+  do j=1,ny
+    write(10,*) (vx(i,j),i=1,nx)
+  end do
+
+  ! closes output file
+  close(10)
+
+! open output file
+  write(file1,'(a,i2.2,a)') 'vy-',itprint,'.dat'
+  open(unit=10,file=file1,status='unknown')
+
+  do i=1,nx
+    do j=1,ny
+      call uprim(u(:,i,j),prim,temp)
+    vy(i,j)=prim(3)
+    end do
+  end do
+  do j=1,ny
+    write(10,*) (vy(i,j),i=1,nx)
+  end do
+  ! closes output file
+  close(10)
+
+! open output file
+  write(file1,'(a,i2.2,a)') 'energy-',itprint,'.dat'
+  open(unit=10,file=file1,status='unknown')
+
+  do i=1,nx
+    do j=1,ny
+      call uprim(u(:,i,j),prim,temp)
+    energy(i,j)=prim(neq)
+    end do
+  end do
+  do j=1,ny
+    write(10,*) (energy(i,j),i=1,nx)
   end do
 
   ! closes output file
@@ -152,14 +204,15 @@ subroutine timestep(dt)
   !internal variables
   real :: temp,cs,csound,del
   real,dimension(neq) :: prim
-  integer :: i
+  integer :: i,j
   !
   del=1.e+30
   do i=1,nx
     do j=1,ny
       call uprim(u(:,i,j),prim,temp)
-      cs=csound(prim(1),prim(3))
-      del=min(del, dx/abs(prim(2)+cs), dy/abs(prim(3)+cs))
+      cs=csound(prim(1),prim(neq))
+      del=min(del, dx/abs(prim(2)+cs))
+      del=min(del, dy/abs(prim(3)+cs))
     enddo
   enddo
   dt=Co*del
@@ -191,7 +244,7 @@ subroutine uprim(uu,prim,temp)
   prim(1)=uu(1)
   prim(2)=uu(2)/prim(1)
   prim(3)=uu(3)/prim(1)
-  ek=0.5*prim(1)*(prim(2)+prim(3))**2.
+  ek=0.5*prim(1)*(prim(2)**2. +prim(3)**2.)
   et=uu(neq)-ek
   prim(neq)=et/(gamma-1.)
   temp=prim(neq)/(prim(1)*boltz/(mu*mh))
@@ -205,55 +258,67 @@ subroutine tstep(dt,time)
   implicit none
   real,            intent(in) :: dt, time
   !internal variables
-  real, dimension(neq,0:nx+1) :: up
-  real                        :: dtx
-  integer                     :: i
+  real, dimension(neq,0:nx+1,0:ny+1) :: up
+  real                        :: dtx,dty
+  integer                     :: i,j
 
   !  obtain the fluxes
   !
-  call fluxes(u,f)
+  call fluxes(u,f,g)
 
   !   Here is the Lax method, notice that the values at the extremes can
   !   not be calculated, we need to enter then as boundary conditions
   dtx=dt/dx
+  dty=dt/dy
 !
   do i=1,nx
-    up(:,i)=0.5*(u(:,i-1)+u(:,i+1)-dtx*(f(:,i+1)-f(:,i-1)))
+    do j=1,ny
+      up(:,i,j)=0.5*(u(:,i-1,j)+u(:,i+1,j) - dtx*(f(:,i+1,j)-f(:,i-1,j)) - dty*(g(:,i,j+1)-g(:,i,j-1)))
+    end do
   end do
 !
 !   Boundary conditions to the U^n+1
   call boundaries(up)
 
   ! copy the up to the u
-  u(:,:)=up(:,:)
+  u(:,:,:)=up(:,:,:)
 
   return
 end subroutine tstep
 
 !=======================================================================
 ! Obtain the fluxes F
-subroutine fluxes(u,f)
+subroutine fluxes(u,f,g)
   use globals, only :neq,nx,ny,gamma
   implicit none
   real,dimension(neq,0:nx+1,0:ny+1),intent(in) :: u
   real,dimension(neq,0:nx+1,0:ny+1),intent(out) :: f
+  real,dimension(neq,0:nx+1,0:ny+1),intent(out) :: g
   !internal variables
   real, dimension(neq) :: prim
-  integer :: i
+  integer :: i,j
   real :: temp,etot
 
-   do i=0,nx+1
+  do i=0,nx+1
     do j=0,ny+1
       call uprim(u(:,i,j),prim,temp)
-      Etot=0.5*prim(1)*(prim(2)+prim(3))**2.+prim(neq)/(gamma-1.)
+      Etot=0.5*prim(1)*(prim(2)**2. + prim(3)**2.) + prim(neq)/(gamma-1.)
       f(1,i,j)=prim(1)*prim(2)
-      !f(2,i,j)=prim(1)*prim(2)**2.+prim(3)
-      f(2,i,j)=prim(1)*prim(2)**2.+prim(1)*prim(2)*prim(3)
-      f(3,i,j)=prim(1)*prim(3)**2.+prim(1)*prim(2)*prim(3)
-      f(neq,i,j)=(prim(2)+prim(3))*(etot+prim(3))
+      f(2,i,j)=prim(1)*prim(2)**2.+prim(neq)
+      f(3,i,j)=prim(1)*prim(2)*prim(3)
+      f(neq,i,j)=prim(2)*(etot+prim(3))
     enddo
-!    print*,u(1,i),prim(1),f(1,i),prim(2)
-!    print*,prim(1),f(2,i),prim(2),prim(3)
+  enddo
+
+  do i=0,nx+1
+    do j=0,ny+1
+      call uprim(u(:,i,j),prim,temp)
+      Etot=0.5*prim(1)*(prim(2)**2. + prim(3)**2.) + prim(neq)/(gamma-1.)
+      g(1,i,j)=prim(1)*prim(3)
+      g(3,i,j)=prim(1)*prim(3)**2.+prim(neq)
+      g(2,i,j)=prim(1)*prim(2)*prim(3)
+      g(neq,i,j)=prim(3)*(etot+prim(3))
+    enddo
   enddo
 
   return
