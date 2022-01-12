@@ -2,12 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import ascii
 import imageio
-
-K=1.38E-16
+import os
 
 for i in range(10):
 	a=str(i)
-	data=ascii.read('vishd-0'+a+'.dat')
+	data=ascii.read('hd-0'+a+'.dat')
 	plt.subplots(figsize=(12,18))
 	plt.subplot(3,1,1)
 	plt.xlabel('x')
@@ -39,4 +38,6 @@ for i in range(10):
 images = []
 for i in range(10):
         images.append(imageio.imread('im'+str(i)+'.png'))
-imageio.mimsave('Lax.gif', images, fps=3)
+imageio.mimsave('mygif.gif', images, fps=3)
+
+os.system('eog mygif.gif')
