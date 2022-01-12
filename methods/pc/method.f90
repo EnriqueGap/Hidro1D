@@ -34,7 +34,9 @@
     !Corrector Step
     do i=1,nx
       do j=1,ny
-      	up(:,i,j)=0.5*(u(:,i,j)+upp(:,i,j) - dtx*(f(:,i,j)-f(:,i-1,j)) - dty*(g(:,i,j)-g(:,i,j-1))) &
+      	up(:,i,j)=0.5*(u(:,i,j)+upp(:,i,j) &
+      	- dtx*(f(:,i,j)-f(:,i-1,j)) &
+      	- dty*(g(:,i,j)-g(:,i,j-1))) &
       	+ eta*(upp(:,i-1,j) + upp(:,i+1,j) + upp(:,i,j-1) + upp(:,i,j+1) - 4*upp(:,i,j))
       end do
     end do  

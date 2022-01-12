@@ -60,47 +60,33 @@
     ! open output file
     write(file1,'(a,i2.2,a)') 'rho-',itprint,'.dat'
     open(unit=10,file=file1,status='unknown')
-  
     do i=1,nx
       do j=1,ny
         call uprim(u(:,i,j),prim,temp)
-      rho(i,j)=prim(1)
+        rho(i,j)=prim(1)
+        vx(i,j)=prim(2)
+        vy(i,j)=prim(3)
+        pressure(i,j)=prim(neq)
       end do
     end do
     do j=1,ny
       write(10,*) (rho(i,j),i=1,nx)
     end do
-  
     ! closes output file
     close(10)
   
   ! open output file
     write(file1,'(a,i2.2,a)') 'vx-',itprint,'.dat'
     open(unit=10,file=file1,status='unknown')
-  
-    do i=1,nx
-      do j=1,ny
-        call uprim(u(:,i,j),prim,temp)
-      vx(i,j)=prim(2)
-      end do
-    end do
     do j=1,ny
       write(10,*) (vx(i,j),i=1,nx)
     end do
-  
     ! closes output file
     close(10)
   
   ! open output file
     write(file1,'(a,i2.2,a)') 'vy-',itprint,'.dat'
     open(unit=10,file=file1,status='unknown')
-  
-    do i=1,nx
-      do j=1,ny
-        call uprim(u(:,i,j),prim,temp)
-      vy(i,j)=prim(3)
-      end do
-    end do
     do j=1,ny
       write(10,*) (vy(i,j),i=1,nx)
     end do
@@ -110,17 +96,9 @@
   ! open output file
     write(file1,'(a,i2.2,a)') 'pressure-',itprint,'.dat'
     open(unit=10,file=file1,status='unknown')
-  
-    do i=1,nx
-      do j=1,ny
-        call uprim(u(:,i,j),prim,temp)
-      pressure(i,j)=prim(neq)
-      end do
-    end do
     do j=1,ny
       write(10,*) (pressure(i,j),i=1,nx)
     end do
-  
     ! closes output file
     close(10)
   
@@ -192,20 +170,13 @@
         f(2,i,j)=prim(1)*prim(2)**2.+prim(neq)
         f(3,i,j)=prim(1)*prim(2)*prim(3)
         f(neq,i,j)=prim(2)*(etot+prim(3))
-      enddo
-    enddo
-  
-    do i=0,nx+1
-      do j=0,ny+1
-        call uprim(u(:,i,j),prim,temp)
-        Etot=0.5*prim(1)*(prim(2)**2. + prim(3)**2.) + prim(neq)/(gamma-1.)
         g(1,i,j)=prim(1)*prim(3)
         g(3,i,j)=prim(1)*prim(3)**2.+prim(neq)
         g(2,i,j)=prim(1)*prim(2)*prim(3)
         g(neq,i,j)=prim(3)*(etot+prim(3))
       enddo
     enddo
-  
+
     return
   end subroutine fluxes
   
