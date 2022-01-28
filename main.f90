@@ -5,7 +5,9 @@
 program hd_1d
   use globals
   use general
+  use initial
   use method
+  use physics
   implicit none
   ! declaration of some variables needed by the main program
   real            :: time, dt             !  t, $Delta t$
@@ -20,7 +22,6 @@ program hd_1d
 
   ! output at tprint intervals
     if(time.ge.tprint) then				!time<=tprint
-      print*,'itprint=',itprint, time,tmax,dt
       call output(itprint)
       tprint=tprint+dtprint
       itprint=itprint+1
@@ -28,7 +29,7 @@ program hd_1d
 
     ! Obtain the $Delta t$ allowed by the CFL criterium
     call timestep(dt)
-    !
+    print*,'itprint=',itprint, time,tmax,dt
     ! Integrate u fom t to t+dt
     call tstep(dt,time)
     ! time counter increases
