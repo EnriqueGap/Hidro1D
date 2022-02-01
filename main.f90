@@ -7,6 +7,7 @@ program hd_2d
   use globals
   use general
   use method
+  use initial
   implicit none
   ! declaration of some variables needed by the main program
   real            :: time, dt             !  t, $\Delta t$
