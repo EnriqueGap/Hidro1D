@@ -2,21 +2,22 @@
 module globals
     implicit none
     !   This is the number of points used to discretize X
-    integer, parameter :: nx=100
+    integer, parameter :: nx=1000
     !   This is the number of equations
     integer, parameter :: neq=3
     !   Here we set the extent of X and calculate $\Delta x$
-    real, parameter :: xmax=5e7 !500 Km
+    real, parameter :: xmax=5e7 !1000 Km
     real, parameter :: dx=xmax/real(nx)
     ! The simulation times
     real, parameter :: tmax= 5             ! maximumn integration time
     real, parameter :: dtprint=0.005          ! interval between outputs
     ! Courant number
-    real, parameter :: Co=0.8
+    real, parameter :: Co=0.3
     ! simulation constants
     ! adiabatic index
     real, parameter :: gamma=5./3.
     ! mean weight
+    real, parameter :: eta=0.
     real, parameter :: mu=1.4
     ! universal constants
     !boltzman in cgs
