@@ -76,10 +76,43 @@ contains
     ! free outflow (salida libre)
     !x
     u(:,0,:)=u(:,1,:)
+    u(2,0,:)=-u(2,1,:)
     u(:,nx+1,:)=u(:,nx,:)
+    u(2,nx+1,:)=-u(2,nx,:)
     !y
     u(:,:,0)=u(:,:,1)
+    u(2,:,0)=-u(2,:,1)    
     u(:,:,ny+1)=u(:,:,ny)
+    u(2,:,ny+1)=-u(2,:,ny)
     return
   end subroutine boundaries
+!=======================================================================
+! Obtain the sources
+  subroutine sources(u,i,j,ss)
+    use globals, only :neq,dx,gamma
+    implicit none
+    real,dimension(neq,0:nx+1,0:ny+1),intent(in) :: u
+    integer, intent(in) :: i,j
+    real,dimension(neq),intent(out) :: ss
+    ! Internal variables
+    real :: R, alfa, term
+    real, dimension(neq) :: prim
+    real :: temp,etot
+    alfa=1.
+    R=float(j)*dy
+    term=alfa/R
+    call uprim(u(:,i,j),prim,temp)
+    ! prim1 = rho, prim2,3,4 = v, prim_neq = P
+    ! Etot= Ek + P/(gamma-1)
+    Etot=0.5*prim(1)*(prim(2)**2+prim(3)**2)+prim(neq)/(gamma-1.)
+    ! source1 = eta*rho*vy/y
+    ss(1)=term*prim(1)*prim(3)
+    ! source2 = eta*rho*vx*vy/y
+    ss(2)=term*prim(1)*prim(2)*prim(3)
+    ! source3 = eta*(rho*vy^2 + P)/y
+    ss(3)=term*(prim(1)*prim(3)**2+prim(neq))
+    ! source_neq = eta*vy*(Etot+P)/y
+    ss(neq)=term*prim(3)*(etot+prim(neq))
+    return
+  end subroutine sources
 end module physics

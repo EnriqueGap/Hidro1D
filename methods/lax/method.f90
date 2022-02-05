@@ -27,6 +27,8 @@ contains
       do j=1,ny
         up(:,i,j)=0.25*(u(:,i-1,j)+u(:,i+1,j) + u(:,i,j-1)+u(:,i,j+1)) &
         -0.5*(dtx*(f(:,i+1,j)-f(:,i-1,j)) + dty*(g(:,i,j+1)-g(:,i,j-1)))
+        call sources(u,i,j,ss)
+        up(:,i,j)=up(:,i,j)-dt*ss(1:neq)
       end do
     end do
     ! Boundary conditions to the U^n+1
