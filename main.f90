@@ -4,8 +4,9 @@
 !   main program
 program hd_1d
   use globals
-  use general
   use initial
+  use mesh
+  use general
   use method
   use physics
   implicit none

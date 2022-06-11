@@ -1,5 +1,6 @@
 module initial
 use globals
+use mesh
 implicit none
 contains
   !=======================================================================

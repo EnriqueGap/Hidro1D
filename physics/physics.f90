@@ -1,5 +1,6 @@
 module physics
 use globals
+use mesh
 implicit none
 contains
   !========================================================================

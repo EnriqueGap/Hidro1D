@@ -1,21 +1,22 @@
 METHOD = LAX
 #METHOD = MACCORMACK
-MODEL = SN
-#MODEL = SHOCK
+#MODEL = SN
+MODEL = SHOCK
 include methods/Makefile
 include initial/Makefile
 
-hidro : globals.o \
-		initial.o \
-			physics.o \
-				methods.o \
-					general.o \
-						main.o
+hidro : mesh.o \
+		globals.o \
+			initial.o \
+				physics.o \
+					methods.o \
+						general.o \
+							main.o
 	@echo ""
 	@echo ""
 	@echo "...Compiling files..."
 	@echo ""
-	@-gfortran -o hidro main.o globals.o general.o method.o initial.o physics.o
+	@-gfortran -o hidro main.o globals.o general.o method.o initial.o physics.o mesh.o
 	@echo ""
 	@echo "################### Makefile parameters ###################"
 	@echo "" 
@@ -25,6 +26,9 @@ hidro : globals.o \
 	@echo "###########################################################"
 	@echo "" 
 	
+mesh.o : $(MESH)
+	gfortran -c -k8 $(MESH)
+
 globals.o : globals.f90
 	gfortran -c -k8 globals.f90
 
@@ -44,4 +48,4 @@ main.o : main.f90
 	gfortran -c -k8 main.f90
 
 clean:
-	rm -f *.o *.mod *.dat *png *.gif hidro
+	rm -f *.o *.mod *.dat *png hidro

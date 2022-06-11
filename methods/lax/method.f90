@@ -1,6 +1,7 @@
 module method
 use globals
 use physics
+use mesh
 implicit none
 contains
 !=======================================================================
@@ -25,7 +26,7 @@ contains
     dtx=dt/dx
     do i=1,nx
       up(:,i)=0.5*(u(:,i-1)+u(:,i+1)-dtx*(f(:,i+1)-f(:,i-1)))+eta*(u(:,i+1)+u(:,i-1)-2.*u(:,i)) 
-      call sources(u,i,ss)
+!      call sources(u,i,ss)
 !      up(:,i)=up(:,i)-dt*ss(1:neq)
     end do 
     !  Boundary conditions to the U^n+1

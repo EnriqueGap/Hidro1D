@@ -1,16 +1,12 @@
 !   This module contains global variables
 module globals
+    use mesh
     implicit none
-    !   This is the number of points used to discretize X
-    integer, parameter :: nx=1000
     !   This is the number of equations
     integer, parameter :: neq=3
-    !   Here we set the extent of X and calculate $\Delta x$
-    real, parameter :: xmax=5e7 !1000 Km
-    real, parameter :: dx=xmax/real(nx)
     ! The simulation times
-    real, parameter :: tmax= 5             ! maximumn integration time
-    real, parameter :: dtprint=0.005          ! interval between outputs
+    real, parameter :: tmax= 1             ! maximumn integration time
+    real, parameter :: dtprint=0.1!0.005          ! interval between outputs
     ! Courant number
     real, parameter :: Co=0.3
     ! simulation constants

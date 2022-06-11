@@ -1,5 +1,6 @@
 module initial
 use globals
+use mesh
 implicit none
 contains
   !=======================================================================
@@ -39,12 +40,6 @@ contains
         u(2,i)=u1*rho1
         u(neq,i)=E1
       end if
-  
-!      if( (x-0.5*dx <= R).and.(x+0.5*dx >= R) ) then
-!        u(1,i)=(rho0+rho1)/2.
-!        u(2,i)=(u0+u1)/2.
-!        u(neq,i)=(E0+E1)
-!      end if
     end do
     ! reset the counters and time to 0
     time=0.
